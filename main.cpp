@@ -5,6 +5,7 @@
 
 // --- Data Loading Function ---
 void load_graph_from_file(Graph& g, const std::string& filename) {
+    const double DEFAULT_PROBABILITY = 0.01;
     std::ifstream file(filename);
     if (!file.is_open()) {
         std::cerr << "Error: Could not open file " << filename << std::endl;
@@ -19,7 +20,7 @@ void load_graph_from_file(Graph& g, const std::string& filename) {
 
         // Extract two IDs from the line
         if (ss >> u >> v) {
-            g.add_edge(u, v);
+            g.add_edge(u, v, DEFAULT_PROBABILITY);
         }
     }
     std::cout << "Graph loaded successfully from " << filename << std::endl;
@@ -47,7 +48,8 @@ int main() {
         //     std::cout << neighbors[i] << " ";
         // }
         // std::cout << std::endl;
-    } else {
+    } else 
+    {
         std::cout << "Node 0 not found in the graph." << std::endl;
     }
 
