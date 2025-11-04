@@ -48,10 +48,10 @@ int main() {
         //     std::cout << neighbors[i] << " ";
         // }
         // std::cout << std::endl;
-    } else 
-    {
+    } 
+    else{
         std::cout << "Node 0 not found in the graph." << std::endl;
     }
-
+    
     return 0;
 }
