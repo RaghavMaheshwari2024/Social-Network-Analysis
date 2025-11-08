@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+using namespace std;
 
 // --- Data Loading Function ---
 void load_graph_from_file(Graph& g, const std::string& filename) {
@@ -25,6 +26,11 @@ void load_graph_from_file(Graph& g, const std::string& filename) {
     std::cout << "Graph loaded successfully from " << filename << std::endl;
 }
 
+//custom comparator for sorting the scores_vec to get the top k seeds
+bool Compare(const pair<int, double>& a, const pair<int, double>& b){
+        return a.second > b.second;
+}
+
 // --- Main function for testing Week 1 ---
 int main() {
     Graph my_network;
@@ -41,15 +47,26 @@ int main() {
     if (adj_list.count(0)) {
         const auto& neighbors = my_network.get_neighbors(0);
         std::cout << "Node 0 has " << neighbors.size() << " neighbors." << std::endl;
-        // Optionally print a few neighbors
-        // std::cout << "First three neighbors: ";
-        // for (size_t i = 0; i < std::min((size_t)3, neighbors.size()); ++i) {
-        //     std::cout << neighbors[i] << " ";
-        // }
-        // std::cout << std::endl;
     } else {
         std::cout << "Node 0 not found in the graph." << std::endl;
     }
+
+    //computing the betweenness centrality for my_network
+    unordered_map betweenness_centrality_scores = my_network.compute_betweenness_centrality();
+    vector<pair<int, double>> scores_vec;
+    cout << "Computing Betweenness centrality of the graph..." << endl;
+
+    for(const auto& node_score: betweenness_centrality_scores){
+        scores_vec.push_back(node_score);
+    }
+
+    sort(scores_vec.begin(), scores_vec.end(), Compare);
+
+    cout << "==== Top 5 Influencers ===="<< endl;
+    for(int i = 0; i < 5 && i < scores_vec.size(); ++i){
+        cout << "Rank " << (i + 1) << ": Node " << scores_vec[i].first << " (Score: " << scores_vec[i].second << ")" << endl;
+    }
+    cout << "===========================" << endl;
 
     return 0;
 }
