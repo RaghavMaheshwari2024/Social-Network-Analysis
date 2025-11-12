@@ -1,0 +1,13 @@
+{
+	"folders": [
+		{
+			"name": "SNA_Project",
+			"path": "."
+		}
+	],
+	"settings": {
+		"files.associations": {
+			"stack": "cpp"
+		}
+	}
+}
