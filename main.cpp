@@ -50,95 +50,95 @@ int count_common_neighbors(const Graph& g, NodeID A, NodeID B) {
 }
 
 
-// --- 2. BETWEENNESS CENTRALITY (Brandes' Algorithm) ---
-unordered_map<NodeID, double> calculate_betweenness_centrality(const Graph& g) {
-    unordered_map<NodeID, double> BC;
-    vector<NodeID> all_nodes;
+// // --- 2. BETWEENNESS CENTRALITY (Brandes' Algorithm) ---
+// unordered_map<NodeID, double> calculate_betweenness_centrality(const Graph& g) {
+//     unordered_map<NodeID, double> BC;
+//     vector<NodeID> all_nodes;
     
-    // Get all unique nodes and initialize BC scores
-    for (const auto& pair : g.get_adj_list()) {
-        all_nodes.push_back(pair.first);
-        BC[pair.first] = 0.0; 
-    }
+//     // Get all unique nodes and initialize BC scores
+//     for (const auto& pair : g.get_adj_list()) {
+//         all_nodes.push_back(pair.first);
+//         BC[pair.first] = 0.0; 
+//     }
     
-    // Iterate over all nodes 's' (source)
-    for (NodeID s : all_nodes) {
-        stack<NodeID> S; 
-        queue<NodeID> Q; 
+//     // Iterate over all nodes 's' (source)
+//     for (NodeID s : all_nodes) {
+//         stack<NodeID> S; 
+//         queue<NodeID> Q; 
         
-        // P[w] stores predecessors on shortest paths from s to w
-        unordered_map<NodeID, vector<NodeID>> P; 
-        unordered_map<NodeID, int> sigma; // Number of shortest paths from s to w
-        unordered_map<NodeID, int> dist;  // Shortest distance from s to w
+//         // P[w] stores predecessors on shortest paths from s to w
+//         unordered_map<NodeID, vector<NodeID>> P; 
+//         unordered_map<NodeID, int> sigma; // Number of shortest paths from s to w
+//         unordered_map<NodeID, int> dist;  // Shortest distance from s to w
         
-        // --- FORWARD PASS (BFS) Initialization ---
-        sigma[s] = 1;
-        dist[s] = 0;
-        Q.push(s);
+//         // --- FORWARD PASS (BFS) Initialization ---
+//         sigma[s] = 1;
+//         dist[s] = 0;
+//         Q.push(s);
 
-        // --- FORWARD PASS ---
-        while (!Q.empty()) {
-            NodeID v = Q.front();
-            Q.pop();
-            S.push(v);
+//         // --- FORWARD PASS ---
+//         while (!Q.empty()) {
+//             NodeID v = Q.front();
+//             Q.pop();
+//             S.push(v);
             
-            if (P.find(v) == P.end()) { P[v] = vector<NodeID>(); }
+//             if (P.find(v) == P.end()) { P[v] = vector<NodeID>(); }
 
-            // Iterate through neighbors 'w'
-            for (const auto& edge : g.get_neighbors(v)) {
-                NodeID w = edge.target_node;
+//             // Iterate through neighbors 'w'
+//             for (const auto& edge : g.get_neighbors(v)) {
+//                 NodeID w = edge.target_node;
                 
-                // 1. Node w discovered for the first time
-                if (dist.find(w) == dist.end()) {
-                    dist[w] = dist[v] + 1;
-                    sigma[w] = 0;
-                    Q.push(w);
-                }
+//                 // 1. Node w discovered for the first time
+//                 if (dist.find(w) == dist.end()) {
+//                     dist[w] = dist[v] + 1;
+//                     sigma[w] = 0;
+//                     Q.push(w);
+//                 }
                 
-                // 2. Node w found on a shortest path from s to v
-                if (dist[w] == dist[v] + 1) {
-                    sigma[w] += sigma[v]; 
+//                 // 2. Node w found on a shortest path from s to v
+//                 if (dist[w] == dist[v] + 1) {
+//                     sigma[w] += sigma[v]; 
                     
-                    if (P.find(w) == P.end()) { P[w] = vector<NodeID>(); }
-                    P[w].push_back(v); 
-                }
-            }
-        }
+//                     if (P.find(w) == P.end()) { P[w] = vector<NodeID>(); }
+//                     P[w].push_back(v); 
+//                 }
+//             }
+//         }
         
-        // --- BACKWARD PASS (Accumulation) ---
-        unordered_map<NodeID, double> delta; // Dependency score
-        for (NodeID node : all_nodes) { delta[node] = 0.0; }
+//         // --- BACKWARD PASS (Accumulation) ---
+//         unordered_map<NodeID, double> delta; // Dependency score
+//         for (NodeID node : all_nodes) { delta[node] = 0.0; }
 
-        while (!S.empty()) {
-            NodeID w = S.top();
-            S.pop();
+//         while (!S.empty()) {
+//             NodeID w = S.top();
+//             S.pop();
             
-            // Calculate dependency delta_s(w) for its predecessors 'v'
-            for (NodeID v : P[w]) {
-                double fraction = (double)sigma[v] / sigma[w];
-                delta[v] += fraction * (1.0 + delta[w]);
-            }
+//             // Calculate dependency delta_s(w) for its predecessors 'v'
+//             for (NodeID v : P[w]) {
+//                 double fraction = (double)sigma[v] / sigma[w];
+//                 delta[v] += fraction * (1.0 + delta[w]);
+//             }
             
-            // Add final dependency to BC score (if w is not the source s)
-            if (w != s) {
-                BC[w] += delta[w];
-            }
-        }
-    }
-    return BC;
-}
+//             // Add final dependency to BC score (if w is not the source s)
+//             if (w != s) {
+//                 BC[w] += delta[w];
+//             }
+//         }
+//     }
+//     return BC;
+// }
 
 
 // --- 3. DYNAMIC ICM SIMULATION ---
-int simulate_ICM(const Graph& g, const set<NodeID>& S, int num_simulations) {
+int simulate_ICM(const Graph& g,const set<NodeID>& S,int num_simulations) {
     long long total_spread = 0;
     random_device rd;
     mt19937 gen(rd());
     uniform_real_distribution<> dis(0.0, 1.0);
 
-    for (int i = 0; i < num_simulations; ++i) {
-        set<NodeID> active = S;
-        queue<NodeID> q;
+    for(int i=0;i<num_simulations;++i) {
+        set<NodeID>active =S;
+        queue<NodeID>q;
         for (NodeID node : S) q.push(node);
         
         while (!q.empty()) {
@@ -187,6 +187,9 @@ void load_graph_from_file(Graph& g, const string& filename) {
     cout << "Graph loaded successfully from " << filename << endl;
 }
 
+bool Compare(const pair<int, double>& a, const pair<int, double>& b){
+        return a.second > b.second;
+}
 
 // --- Main function: Driver for Hybrid Influence Maximization ---
 int main() {
@@ -203,18 +206,15 @@ int main() {
 
     // 2. Calculate Betweenness Centrality (BC) and select K seeds
     cout << "\n--- Phase 1: Calculating Betweenness Centrality for Seed Selection ---" << endl;
-    unordered_map<NodeID, double> bc_scores = calculate_betweenness_centrality(my_network);
+    unordered_map<NodeID, double> bc_scores = my_network.compute_betweenness_centrality();
 
     // Prepare for sorting
     vector<pair<double, NodeID>> sorted_nodes;
     for (const auto& pair : bc_scores) {
-        sorted_nodes.push_back({pair.second, pair.first});
+        sorted_nodes.push_back({pair.first, pair.second});
     }
     // Sort descending by BC score
-    sort(sorted_nodes.begin(), sorted_nodes.end(),
-              [](const pair<double, NodeID>& a, const pair<double, NodeID>& b){
-                  return a.first > b.first;
-              });
+    sort(sorted_nodes.begin(), sorted_nodes.end(),Compare);
 
     // Select the top K nodes
     set<NodeID> initial_seed_set;
