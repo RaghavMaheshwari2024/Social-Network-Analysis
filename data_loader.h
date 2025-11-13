@@ -9,9 +9,17 @@ using namespace std;
 // Define the Node ID type
 using NodeID = int;
 
+// --- MODIFICATION 1: Using InfluenceEdge struct ---
+// This is needed for compatibility with ICM functions.
+struct InfluenceEdge {
+    NodeID target_node;
+    double probability; // Probability of successful influence along this edge
+};
+
+//MODIFICATION 2: using modified list to handle Influence edges matching Raghav's ICM code structure ------
 // The graph is represented as an Adjacency List:
-// Map: key is a NodeID, value is a vector of its neighbors (edges)
-using AdjacencyList = std::unordered_map<NodeID, std::vector<NodeID>>;
+// Map: key is a NodeID, value is a vector of its neighbors and the value of successful probability influence(edges)
+using AdjacencyList = std::unordered_map<NodeID, std::vector<InfluenceEdge>>;
 
 /**
 * @brief: Stores all results from the Brandes' algorithm Phase 1 (Forward Pass)
@@ -35,15 +43,16 @@ private:
 
 public:
     // Function to add an edge (undirected)
-    void add_edge(NodeID u, NodeID v) {
-        adj[u].push_back(v);
-        adj[v].push_back(u); // Social network connections are usually two-way
+    // --- MODIFICATION 3: Update add_edge to accept a probability 'p' ---
+    void add_edge(NodeID u, NodeID v, double p) {
+        adj[u].push_back({v, p});
+        adj[v].push_back({u, p}); // Social network connections are usually two-way
     }
 
     // Function to get the neighbors of a node
-    const std::vector<NodeID>& get_neighbors(NodeID u) const {
+    const std::vector<InfluenceEdge>& get_neighbors(NodeID u) const {
         // Return an empty vector if the node doesn't exist to prevent crash
-        static const std::vector<NodeID> empty_vec; 
+        static const std::vector<InfluenceEdge> empty_vec; 
         auto it = adj.find(u);
         if (it != adj.end()) {
             return it->second;
@@ -70,7 +79,8 @@ public:
         queue<int> q;
         q.push(src);
 
-        for(const pair<NodeID, vector<NodeID>> &i: adj){
+        //making changes on applying InfluenceEdge
+        for(const pair<NodeID, vector<InfluenceEdge>> &i: adj){
             if(i.first != src){
                 result.dist[i.first] = 1e9;
                 result.sigma[i.first] = 0;
@@ -81,7 +91,11 @@ public:
         while(!q.empty()){
             NodeID currNode = q.front(); q.pop();
             result.S.push(currNode);
-            for(NodeID i: adj[currNode]){
+
+            // --- MODIFICATION 5: Adapt loop to use InfluenceEdge ---
+            for(InfluenceEdge& edge: adj[currNode]){
+                NodeID i = edge.target_node; // Get the neighbor ID
+
                 if(result.dist[currNode] + 1 < result.dist[i]){
                     result.dist[i] = result.dist[currNode] + 1;
                     result.sigma[i] = result.sigma[currNode];
@@ -106,21 +120,23 @@ public:
     **/
     unordered_map<int, double> compute_betweenness_centrality(){
         unordered_map<int, double> centrality_score;
-        for(const pair<NodeID, vector<NodeID>> &i: adj){
+        for(const pair<NodeID, vector<InfluenceEdge>> &i: adj){
             centrality_score[i.first] = 0.0;
         }
-        for(const pair<NodeID, vector<NodeID>> &i: adj){
+        for(const pair<NodeID, vector<InfluenceEdge>> &i: adj){
             BrandesPhase1Result result = Brandes_Phase_1_BFS(i.first);
             //delta stores the centrality score of each node for every seperate source-node run
             unordered_map<int, double> delta;
-            for(const pair<NodeID, vector<NodeID>> &j: adj){
+            for(const pair<NodeID, vector<InfluenceEdge>> &j: adj){
                 delta[j.first] = 0.0;
             }
 
             while(!result.S.empty()){
                 int w = result.S.top(); result.S.pop();
                 for(int v: result.P[w]){
-                    delta[v] += ((double)result.sigma[v]/result.sigma[w]) * (1.0 + delta[w]);
+                    if(result.sigma[w] != 0){
+                        delta[v] += ((double)result.sigma[v]/result.sigma[w]) * (1.0 + delta[w]);
+                    }
                     
                 }
                 //source node does not get betweenness credit for paths starting at itself
@@ -131,7 +147,7 @@ public:
         }
 
         //normalizing scores: since A->v->B and B->v->A calculates score twice
-        for(const pair<NodeID, vector<NodeID>> &i: adj){
+        for(const pair<NodeID, vector<InfluenceEdge>> &i: adj){ //Adapted loop
             centrality_score[i.first] /= 2.0;
         }
         return centrality_score;

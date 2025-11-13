@@ -2,29 +2,32 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <set>
 using namespace std;
 
 // --- Data Loading Function ---
-void load_graph_from_file(Graph& g, const std::string& filename) {
-    std::ifstream file(filename);
+void load_graph_from_file(Graph& g, const string& filename) {
+    // This value is still required by the add_edge function signature in data_loader.h
+    const double DEFAULT_PROBABILITY = 0.01; 
+    ifstream file(filename);
     if (!file.is_open()) {
-        std::cerr << "Error: Could not open file " << filename << std::endl;
+        cerr << "Error: Could not open file " << filename << endl;
         return;
     }
 
-    std::string line;
-    while (std::getline(file, line)) {
-        // Assume two IDs per line, separated by a space/tab
-        std::stringstream ss(line);
+    string line;
+    while (getline(file, line)) {
+        stringstream ss(line);
         NodeID u, v;
 
-        // Extract two IDs from the line
         if (ss >> u >> v) {
-            g.add_edge(u, v);
+            // Pass the required probability argument
+            g.add_edge(u, v, DEFAULT_PROBABILITY);
         }
     }
-    std::cout << "Graph loaded successfully from " << filename << std::endl;
+    cout << "Graph loaded successfully from " << filename << endl;
 }
+
 
 //custom comparator for sorting the scores_vec to get the top k seeds
 bool Compare(const pair<int, double>& a, const pair<int, double>& b){
@@ -34,39 +37,34 @@ bool Compare(const pair<int, double>& a, const pair<int, double>& b){
 // --- Main function for testing Week 1 ---
 int main() {
     Graph my_network;
-    const std::string filename = "0.edges"; 
+    const string filename = "0.edges"; 
+    const int K_SEEDS = 5;
+    const int NUM_SIMULATIONS = 10000;
 
-    // Load the graph
+    // 1. Load the graph
     load_graph_from_file(my_network, filename);
-
-    // Verify the load (optional: check a known node from your file)
     const auto& adj_list = my_network.get_adj_list();
-    std::cout << "Total Nodes in Graph: " << adj_list.size() << std::endl;
+    cout << "Total Nodes in Graph: " << adj_list.size() << endl;
 
-    // Example check: Find the neighbors of Node ID 0
-    if (adj_list.count(0)) {
-        const auto& neighbors = my_network.get_neighbors(0);
-        std::cout << "Node 0 has " << neighbors.size() << " neighbors." << std::endl;
-    } else {
-        std::cout << "Node 0 not found in the graph." << std::endl;
+    // --- THIS IS THE CRITICAL CHANGE ---
+    // We are now calling your member function from data_loader.h
+    unordered_map<NodeID, double> bc_scores = my_network.compute_betweenness_centrality();
+    // ------------------------------------
+
+    // Prepare for sorting
+    vector<pair<double, NodeID>> sorted_nodes;
+    for (const auto& pair : bc_scores) {
+        sorted_nodes.push_back({pair.first, pair.second});
     }
+    // Sort descending by BC score
+    sort(sorted_nodes.begin(), sorted_nodes.end(), Compare);
 
-    //computing the betweenness centrality for my_network
-    unordered_map betweenness_centrality_scores = my_network.compute_betweenness_centrality();
-    vector<pair<int, double>> scores_vec;
-    cout << "Computing Betweenness centrality of the graph..." << endl;
-
-    for(const auto& node_score: betweenness_centrality_scores){
-        scores_vec.push_back(node_score);
+    // Select the top K nodes
+    set<NodeID> initial_seed_set;
+    cout << "Top " << K_SEEDS << " Seeds (via BC Score):" << endl;
+    for (int i = 0; i < min((int)sorted_nodes.size(), K_SEEDS); ++i) {
+        initial_seed_set.insert(sorted_nodes[i].second);
+        cout << "  Seed " << i+1 << ": Node " << sorted_nodes[i].second 
+                  << " (Score: " << sorted_nodes[i].first << ")" << endl;
     }
-
-    sort(scores_vec.begin(), scores_vec.end(), Compare);
-
-    cout << "==== Top 5 Influencers ===="<< endl;
-    for(int i = 0; i < 5 && i < scores_vec.size(); ++i){
-        cout << "Rank " << (i + 1) << ": Node " << scores_vec[i].first << " (Score: " << scores_vec[i].second << ")" << endl;
-    }
-    cout << "===========================" << endl;
-
-    return 0;
 }
