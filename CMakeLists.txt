@@ -1,17 +1,20 @@
 cmake_minimum_required(VERSION 3.14)
-project(SocialNetworkAnalysis VERSION 1.0 LANGUAGES CXX)
+project(SocialNetworkAnalysis LANGUAGES CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-# include headers
-include_directories(\${CMAKE_SOURCE_DIR}/include)
+# Source layout
+set(PROJECT_INCLUDE_DIR \${CMAKE_SOURCE_DIR}/include)
+set(PROJECT_SRC_DIR \${CMAKE_SOURCE_DIR}/src)
 
-if(EXISTS src/main.cpp)
-  add_executable(sna src/main.cpp)
-  target_include_directories(sna PRIVATE \${CMAKE_SOURCE_DIR}/include)
+# executable
+if(EXISTS \${PROJECT_SRC_DIR}/main.cpp)
+  add_executable(sna \${PROJECT_SRC_DIR}/main.cpp)
+  target_include_directories(sna PRIVATE \${PROJECT_INCLUDE_DIR})
 endif()
 
+# Fetch GoogleTest
 include(FetchContent)
 FetchContent_Declare(
   googletest
@@ -20,15 +23,11 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
+# Tests
 enable_testing()
-
-# Use relative paths for test sources so CMake resolves them reliably
-add_executable(runTests
-    tests/test_graph.cpp
-    tests/test_betweenness.cpp
-    tests/test_recommendation.cpp
-)
-target_include_directories(runTests PRIVATE include)
+file(GLOB TEST_SOURCES "tests/*.cpp")
+add_executable(runTests \${TEST_SOURCES})
+target_include_directories(runTests PRIVATE \${PROJECT_INCLUDE_DIR})
 target_link_libraries(runTests PRIVATE gtest_main)
-
 add_test(NAME AllTests COMMAND runTests)
+EOF
