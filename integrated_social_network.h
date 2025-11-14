@@ -39,12 +39,36 @@ double calculate_influence_probability(int common_neighbors) {
 }
 
 // BETWEENNESS CENTRALITY
+
+/**
+* @brief: Stores all results from the Brandes' algorithm Phase 1 (Forward Pass)
+*
+* @var: S: stores the path order through which we accessed all the nodes in the BFS Traversal
+* @var: dist: stores node and it's distance from a selected source 
+* @var: sigma: stores the node and the frequency of distinct shortest paths from source to the node itself
+* @var: P: stores the predecessors for a node from source on all it's shortest paths
+*
+**/
+
 struct BrandesPhase1Result{
     stack<int> S;
     unordered_map<int, int> dist;
     unordered_map<int, long long> sigma;
     unordered_map<int, vector<int>> P;
 };
+
+/**
+    *@brief: performs the Brandes_Phase_1 traversal for shortest path
+    *
+    *@param: src: the starting point(source) through which we assign credit scores and observe traversals
+    *@var: q: stores the neighbor nodes which will be called later during BFS traversal
+    *@return: returns the traversal results:
+    *               1. number of shortest paths from source to each node
+    *               2. the return stack order
+    *               3. the predecessors for each node on all their shortest paths
+    *               4. the shortest distance of each node from the source
+    *
+    **/
 
 class BetweennessCentrality {
 public:
@@ -90,16 +114,16 @@ public:
         return result;
     }
 
-    static unordered_map<NodeID, double> calculate(const Graph& g){
-        unordered_map<NodeID, double> centrality;
+    static unordered_map<NodeID, double> compute_betweenness_centrality(const Graph& g){
+        unordered_map<NodeID, double> centrality_score;
 
         for(const auto& p : g.get_adj_list())
-            centrality[p.first] = 0.0;
+            centrality_score[p.first] = 0.0;
 
         for(const auto& p : g.get_adj_list()){
             NodeID s = p.first;
             BrandesPhase1Result result = Brandes_Phase_1_BFS(g, s);
-
+            //delta stores the centrality score of each node for every seperate source-node run
             unordered_map<NodeID, double> delta;
             for(const auto& q : g.get_adj_list())
                 delta[q.first] = 0.0;
@@ -113,21 +137,22 @@ public:
                         delta[v] += ((double)result.sigma[v] / result.sigma[w]) * (1.0 + delta[w]);
                     }
                 }
-
+                //source node does not get betweenness credit for paths starting at itself
                 if(w != s){
-                    centrality[w] += delta[w];
+                    centrality_score[w] += delta[w];
                 }
             }
         }
 
+        //normalizing scores: since A->v->B and B->v->A calculates score twice
         for(const auto& p : g.get_adj_list())
-            centrality[p.first] /= 2.0;
+            centrality_score[p.first] /= 2.0;
 
-        return centrality;
+        return centrality_score;
     }
 
     static vector<NodeID> get_top_k_nodes(const Graph& g, int k){
-        auto bc = calculate(g);
+        auto bc = compute_betweenness_centrality(g);
         vector<pair<double, NodeID>> arr;
 
         for(const auto& p : bc)
@@ -336,7 +361,7 @@ public:
     static vector<pair<NodeID, double>> find_influential_friend_candidates(
         const Graph& g, NodeID user, int top_k = 10) {
         
-        auto bc_scores = BetweennessCentrality::calculate(g);
+        auto bc_scores = BetweennessCentrality::compute_betweenness_centrality(g);
         auto recommendations = FriendRecommendation::get_recommendations(g, user, 50);
 
         vector<pair<NodeID, double>> scored_candidates;
