@@ -63,37 +63,11 @@ git clone https://github.com/RaghavMaheshwari2024/Social-Network-Analysis.git
 cd Social-Network-Analysis
 ```
 
-**Step 2: Set up your build folder**
+
+
+**Step2: Running the program**
 ```bash
-mkdir build
-cd build
-```
-
-**Step 3: Build everything**
-```bash
-cmake ..
-make
-```
-
-**Step 4: Run the program**
-```bash
-cd src
-./sna
-```
-
-The program will look for a file called `0.edges` in the main project folder - that's your network data.
-
-**Step 5: Make sure everything works**
-```bash
-cd build
-./runTests
-```
-
-This runs all our tests to verify everything's working correctly.
-
-**To Run the code:**
-First go inside the src folder in the Social-Network-Analysis directory
-```bash
+#First go inside the src folder in the Social-Network-Analysis directory
 cd src
 g++ main.cpp
 #creates an executable file a.exe in windows
