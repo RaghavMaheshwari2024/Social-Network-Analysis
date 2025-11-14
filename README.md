@@ -91,7 +91,7 @@ cd build
 
 This runs all our tests to verify everything's working correctly.
 
-#To Run the code:
+**To Run the code:**
 First go inside the src folder in the Social-Network-Analysis directory
 ```bash
 cd src
