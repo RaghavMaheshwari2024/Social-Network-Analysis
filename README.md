@@ -91,6 +91,17 @@ cd build
 
 This runs all our tests to verify everything's working correctly.
 
+#To Run the code:
+First go inside the src folder in the Social-Network-Analysis directory
+```bash
+cd src
+g++ main.cpp
+#creates an executable file a.exe in windows
+.\a.exe
+#Otherwise in linux
+./a.out
+```
+
 ## The Science Behind It
 
 Our betweenness centrality feature is based on a clever algorithm by Ulrik Brandes from 2001. He figured out how to calculate this metric way faster than previous methods - going from O(N³) complexity down to O(NM). That's a huge deal when you're analyzing large networks!
