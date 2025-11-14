@@ -19,12 +19,12 @@ using namespace std;
 inline int count_common_neighbors(const Graph& g, NodeID A, NodeID B) {
     set<NodeID> neighbors_A;
     for (const auto& edge : g.get_neighbors(A)) {
-        neighbors_A.insert(edge.target);   : was target_node
+        neighbors_A.insert(edge.target);  // FIXED: was target_node
     }
 
     int common_count = 0;
     for (const auto& edge : g.get_neighbors(B)) {
-        NodeID v = edge.target;   : was target_node
+        NodeID v = edge.target;  // FIXED: was target_node
         if (v == A || v == B) continue;
         if (neighbors_A.count(v)) {
             common_count++;
@@ -190,7 +190,7 @@ public:
                 q.pop();
 
                 for (const auto& edge : g.get_neighbors(u)) {
-                    NodeID v = edge.target;   : was target_node
+                    NodeID v = edge.target;  // FIXED: was target_node
                     if (active.find(v) == active.end()) {
                         int common_count = count_common_neighbors(g, u, v);
                         double p_uv = calculate_influence_probability(common_count);
@@ -262,13 +262,13 @@ public:
         set<NodeID> neighbors_u, neighbors_v, union_set;
 
         for (const auto& edge : g.get_neighbors(u)) {
-            neighbors_u.insert(edge.target);   
-            union_set.insert(edge.target);     
+            neighbors_u.insert(edge.target);  // FIXED
+            union_set.insert(edge.target);    // FIXED
         }
 
         for (const auto& edge : g.get_neighbors(v)) {
-            neighbors_v.insert(edge.target);   
-            union_set.insert(edge.target);     
+            neighbors_v.insert(edge.target);  // FIXED
+            union_set.insert(edge.target);    // FIXED
         }
 
         int intersection = 0;
@@ -283,12 +283,12 @@ public:
     static double adamic_adar_index(const Graph& g, NodeID u, NodeID v) {
         set<NodeID> neighbors_u;
         for (const auto& edge : g.get_neighbors(u)) {
-            neighbors_u.insert(edge.target);   
+            neighbors_u.insert(edge.target);  // FIXED
         }
 
         double score = 0.0;
         for (const auto& edge : g.get_neighbors(v)) {
-            NodeID neighbor = edge.target;   
+            NodeID neighbor = edge.target;  // FIXED
             if (neighbors_u.count(neighbor)) {
                 int degree = g.get_neighbors(neighbor).size();
                 if (degree > 1) {
@@ -304,15 +304,15 @@ public:
         
         set<NodeID> direct_friends;
         for (const auto& edge : g.get_neighbors(user)) {
-            direct_friends.insert(edge.target);   
+            direct_friends.insert(edge.target);  // FIXED
         }
         direct_friends.insert(user);
 
         set<NodeID> candidates;
         for (const auto& edge : g.get_neighbors(user)) {
-            NodeID friend_node = edge.target;   
+            NodeID friend_node = edge.target;  // FIXED
             for (const auto& edge2 : g.get_neighbors(friend_node)) {
-                NodeID fof = edge2.target;   
+                NodeID fof = edge2.target;  // FIXED
                 if (!direct_friends.count(fof)) {
                     candidates.insert(fof);
                 }
