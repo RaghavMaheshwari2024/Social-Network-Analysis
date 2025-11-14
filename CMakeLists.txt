@@ -30,4 +30,3 @@ add_executable(runTests \${TEST_SOURCES})
 target_include_directories(runTests PRIVATE \${PROJECT_INCLUDE_DIR})
 target_link_libraries(runTests PRIVATE gtest_main)
 add_test(NAME AllTests COMMAND runTests)
-EOF
