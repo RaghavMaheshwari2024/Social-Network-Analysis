@@ -23,10 +23,19 @@ FetchContent_Declare(
 set(gtest_force_shared_crt ON CACHE BOOL "" FORCE)
 FetchContent_MakeAvailable(googletest)
 
-# Tests
+# === Tests ===
 enable_testing()
-file(GLOB TEST_SOURCES "tests/*.cpp")
-add_executable(runTests \${TEST_SOURCES})
-target_include_directories(runTests PRIVATE \${PROJECT_INCLUDE_DIR})
+
+file(GLOB TEST_SOURCES
+    "${CMAKE_SOURCE_DIR}/tests/*.cpp"
+)
+
+add_executable(runTests
+    ${TEST_SOURCES}
+)
+
+target_include_directories(runTests PRIVATE ${CMAKE_SOURCE_DIR}/include)
 target_link_libraries(runTests PRIVATE gtest_main)
+
 add_test(NAME AllTests COMMAND runTests)
+
