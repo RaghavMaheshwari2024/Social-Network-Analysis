@@ -16,7 +16,7 @@
 using namespace std;
 
 // UTILITY FUNCTIONS
-int count_common_neighbors(const Graph& g, NodeID A, NodeID B) {
+inline int count_common_neighbors(const Graph& g, NodeID A, NodeID B) {
     set<NodeID> neighbors_A;
     for (const auto& edge : g.get_neighbors(A)) {
         neighbors_A.insert(edge.target);  // FIXED: was target_node
@@ -33,7 +33,7 @@ int count_common_neighbors(const Graph& g, NodeID A, NodeID B) {
     return common_count;
 }
 
-double calculate_influence_probability(int common_neighbors) {
+inline double calculate_influence_probability(int common_neighbors) {
     const double SCALING_FACTOR = 0.1;
     return min(1.0, common_neighbors * SCALING_FACTOR);
 }
