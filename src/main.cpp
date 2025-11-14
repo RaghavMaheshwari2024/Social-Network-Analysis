@@ -1,5 +1,5 @@
-#include "data_loader.h"
-#include "integrated_social_network.h"
+#include "../include/data_loader.h"
+#include "../include/integrated_social_network.h"
 #include <iostream>
 #include <iomanip>
 #include <fstream>
@@ -147,7 +147,7 @@ void run_complete_demo(const Graph& g) {
 
 int main() {
     Graph my_network;
-    const string filename = "0.edges";
+    const string filename = "../0.edges";
     
     print_header("INTEGRATED SOCIAL NETWORK SYSTEM");
     cout << "Loading network data from " << filename << "..." << endl;
@@ -187,7 +187,7 @@ int main() {
                 auto duration = chrono::duration_cast<chrono::milliseconds>(end - start);
                 
                 cout << "\nTop " << k << " influential nodes:" << endl;
-                auto bc_scores = BetweennessCentrality::calculate(my_network);
+                auto bc_scores = BetweennessCentrality::compute_betweenness_centrality(my_network);
                 for (size_t i = 0; i < seeds.size(); ++i) {
                     cout << "  " << (i+1) << ". Node " << seeds[i]
                          << " (BC score: " << fixed << setprecision(2)
